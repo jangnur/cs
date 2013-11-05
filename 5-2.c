@@ -187,7 +187,7 @@ int main(int argc, char** argv, char** envp)
     
     print_matrix_file(fd, mat2, n);
     
-    if (size = write(fd, "The result of multiplication:\n", strlen("The result of mutiplication:\n")) < 0)
+    if (size = write(fd, "The result of multiplication:\n", strlen("The result of multiplication:\n")) < 0)
     {
         printf("Cannot write to file\n");
         exit(EXIT_FAILURE);
