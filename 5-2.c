@@ -1,4 +1,4 @@
-#include <stdio.h>
+ #include <stdio.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <string.h>
@@ -10,6 +10,7 @@
 #include <time.h>
 
 #define NBYTES 16
+#define MAXDIGITS 16
 
 int **mat1 = NULL;
 int **mat2 = NULL;
@@ -19,7 +20,7 @@ pthread_t *thid;
 
 void *thread_multiply_matrix(void *);
 
-void print_matrix(int** matrix, int n);
+void print_matrix_file(int fd, int** matrix, int n);
 
 char* read_file(char*);
 
@@ -127,11 +128,6 @@ int main(int argc, char** argv, char** envp)
         }
     }
     
-    printf("Matrix 1:\n");
-    print_matrix(mat1, n);
-    printf("Matrix 2:\n");
-    print_matrix(mat2, n);
-    
     if (m > n)
     {
         printf("Too much threads for my algorithm. I'll use only %d threads.\n", n);
@@ -166,10 +162,62 @@ int main(int argc, char** argv, char** envp)
     time_t end_time = time(NULL);
     int delta = (end_time - launch_time);
     
-    printf("The result of multiplication:\n");
-    print_matrix(mat3, n);
+    int fd;
+    int size;
+    (void)umask(0);
+    if ((fd = open("./result.txt", O_RDWR | O_CREAT | O_EXCL, 0666)) < 0)
+    {
+        printf("Cannot create a file or it already exists\n");
+        exit(EXIT_FAILURE);
+    }
     
-    printf("Multiplication time(in seconds): %d\n", delta);
+    if (size = write(fd, "Matrix 1:\n", strlen("Matrix 1:\n")) < 0)
+    {
+        printf("Cannot write to file\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    print_matrix_file(fd, mat1, n);
+    
+    if (size = write(fd, "Matrix 2:\n", strlen("Matrix 2:\n")) < 0)
+    {
+        printf("Cannot write to file\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    print_matrix_file(fd, mat2, n);
+    
+    if (size = write(fd, "The result of multiplication:\n", strlen("The result of mutiplication:\n")) < 0)
+    {
+        printf("Cannot write to file\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    print_matrix_file(fd, mat3, n);
+    
+    if (size = write(fd, "Multiplication time(in seconds): ", strlen("Multiplication time(in seconds): ")) < 0)
+    {
+        printf("Cannot write to file\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    char* num;
+    if (sprintf(num, "%d", delta) < 0)
+    {
+        printf("Cannot convert integer to string\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    if (size = write(fd, num, strlen(num)) < 0)
+    {
+        printf("Cannot write to file\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (close(fd) < 0)
+    {
+        printf("Cannot close the file\n");
+    }
     
     free(text);
     free(mat1);
@@ -187,20 +235,41 @@ int main(int argc, char** argv, char** envp)
     return 0;
 }
 
-void print_matrix(int** matrix, int n)
+
+void print_matrix_file(int fd, int** matrix, int n) //print a single matrix in the file
 {
-    int i,j;
+    size_t size;
+    int i, j;
     for (i = 0; i < n; i++)
     {
         for (j = 0; j < n; j++)
-            printf("%6d", matrix[i][j]);
-        printf("\n");
+        {
+            char *num;
+            num = (char*) malloc (MAXDIGITS*sizeof(char));
+            if (sprintf(num, "%6d", matrix[i][j]) < 0)
+            {
+                printf("Cannot convert integer to string\n");
+                exit(EXIT_FAILURE);
+            }
+            
+            if (size = write(fd, num, strlen(num)) < 0)
+            {
+                printf("Cannot write to file\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        
+        if (size = write(fd, "\n", strlen("\n")) < 0)
+        {
+            printf("Cannot write to file\n");
+            exit(EXIT_FAILURE);
+        }
+
     }
-    printf("\n");
     
 }
 
-void *thread_multiply_matrix(void *para)
+void *thread_multiply_matrix(void *para) //function for thread
 {
     pthread_t mythid = pthread_self();
     int i = 0, j, h, k;
@@ -224,7 +293,7 @@ void *thread_multiply_matrix(void *para)
     return NULL;
 }
 
-char* read_file(char* path)
+char* read_file(char* path)   //read from file
 {
     int fd;
     (void)umask(0);
@@ -259,9 +328,4 @@ char* read_file(char* path)
     return text;
 
 }
-
-
-
-
-
 
