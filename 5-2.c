@@ -24,6 +24,8 @@ void print_matrix_file(int fd, int** matrix, int n);
 
 char* read_file(char*);
 
+// AP: оформите передачу данных для работы потоков через аргументы как и возврат результата их работы, т.е. mat11 и т.д. не должны находиться в статической памяти
+
 int main(int argc, char** argv, char** envp)
 {
     if (argc > 2)
@@ -58,6 +60,7 @@ int main(int argc, char** argv, char** envp)
     char *text;
     text = read_file(path);
     
+    // AP: оформите создание и заполнение матриц также в отдельной функции
     int i = 0, j, count = 0;
     while (text[i] != '\n')
     {
@@ -245,6 +248,7 @@ void print_matrix_file(int fd, int** matrix, int n) //print a single matrix in t
         for (j = 0; j < n; j++)
         {
             char *num;
+            // AP: malloc есть а где free?
             num = (char*) malloc (MAXDIGITS*sizeof(char));
             if (sprintf(num, "%6d", matrix[i][j]) < 0)
             {
@@ -274,6 +278,7 @@ void *thread_multiply_matrix(void *para) //function for thread
     pthread_t mythid = pthread_self();
     int i = 0, j, h, k;
     
+    // AP: так делать некорректно - никто вам не гарантирует что инициализация thid будет первее начала выполнения потока  - передавать в качестве аргумента (см. другой комментарий про аргументы)
     while (thid[i] != mythid)
     {
         i++;
@@ -306,6 +311,7 @@ char* read_file(char* path)   //read from file
     char *text = NULL;
     size_t size;
     char buffer[NBYTES];
+    // AP: вы дос их пор не разобрались с этим костылем?
     int total = 14;         //forgive me for this, this is only for computer's realloc to work. Actually total = 0.
     while (size = read(fd, buffer, NBYTES))
     {
