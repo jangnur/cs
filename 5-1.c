@@ -8,6 +8,7 @@
 
 #define MAXDIGITS 10
 
+// AP: у вас много мест, где повторяется один и тот же код обработки ошибки - оформите его в виде функции
 void write_matrix(int fd, int n);
 
 int main(int argc, char** argv, char** envp)
@@ -69,6 +70,9 @@ int main(int argc, char** argv, char** envp)
 
 }
 
+// AP: sprintf - нестандартная функция - замените ее
+// AP: вы не проверяете write на возможность записи меньше, чем ожидается и лучше записывать формируемую стоку за раз,
+// а не по-символьно - перепишите
 void write_matrix(int fd, int n)
 {
     size_t size;
