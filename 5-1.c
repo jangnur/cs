@@ -6,17 +6,17 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#define MAXDIGITS 10
 
 // AP: у вас много мест, где повторяется один и тот же код обработки ошибки - оформите его в виде функции
-void write_matrix(int fd, int n);
+void write_matrices(int fd, int n);
+
+void print_error(int n);
 
 int main(int argc, char** argv, char** envp)
 {
     if (argc > 2)
     {
-        printf("Invalid number of parameters\n");
-        exit(EXIT_FAILURE);
+        print_error(0);
     }
     
     int n;
@@ -25,45 +25,32 @@ int main(int argc, char** argv, char** envp)
     {
         if (errno == EINVAL)
         {
-            printf("Invalid number: check the input\n");
-            exit(EXIT_FAILURE);
+            print_error(1);
         }
         
         if (errno == ERANGE)
         {
-            printf("The number is out of range\n");
-            exit(EXIT_FAILURE);
+            print_error(2);
         }
     }
     
     if (n <= 0)
     {
-        printf("Incorrect input. Cannot create matrix with zero or negative size.\n");
-        exit(EXIT_FAILURE);
+        print_error(3);
     }
     
-    int size;
     int fd;
     (void)umask(0);
     if ((fd = open("./data.txt", O_RDWR | O_CREAT | O_EXCL, 0666)) < 0)
     {
-        printf("Cannot create a file or it already exists\n");
-        exit(EXIT_FAILURE);
+        print_error(4);
     }
     
-    write_matrix(fd, n);
-    
-    if (size = write(fd, "\n", strlen("\n")) < 0)
-    {
-        printf("Cannot write to file\n");
-        exit(EXIT_FAILURE);
-    }
-    
-    write_matrix(fd, n);
+    write_matrices(fd, n);
     
     if (close(fd) < 0)
     {
-        printf("Cannot close the file\n");
+        print_error(5);
     }
     
     return 0;
@@ -73,30 +60,103 @@ int main(int argc, char** argv, char** envp)
 // AP: sprintf - нестандартная функция - замените ее
 // AP: вы не проверяете write на возможность записи меньше, чем ожидается и лучше записывать формируемую стоку за раз,
 // а не по-символьно - перепишите
-void write_matrix(int fd, int n)
+
+void write_matrices(int fd, int n)
 {
-    size_t size;
-    int i, j;
+    char* text;
+    int length  = 2*n*n + 1;
+    text = (char*) malloc (length*sizeof(char));
+    int i, j, count = 0;
     for (i = 0; i < n; i++)
     {
         for (j = 0; j < n; j++)
         {
             srand(time(NULL));
             int randnum = random() % 10;
-            char *num;
-            num = (char*) malloc (MAXDIGITS*sizeof(char));
-            if (sprintf(num, "%d", randnum) < 0)
-            {
-                printf("Cannot convert integer to string\n");
-                exit(EXIT_FAILURE);
-            }
-            
-            if (size = write(fd, num, strlen(num)) < 0)
-            {
-                printf("Cannot write to file\n");
-                exit(EXIT_FAILURE);
-            }
+            char dig = (char)(((int)'0') + randnum);
+            text[count] = dig;
+            count++;
+        }        
+    }
+    
+    text[count] = '\n';
+    count++;
+    
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < n; j++)
+        {
+            srand(time(NULL));
+            int randnum = random() % 10;
+            char dig = (char)(((int)'0') + randnum);
+            text[count] = dig;
+            count++;
         }
     }
+    
+    size_t size;
 
+    if (size = write(fd, text, strlen(text)) != strlen(text))
+    {
+        if (size < 0)
+        {
+            print_error(6);
+        }
+        else
+        {
+            print_error(7);
+        }
+    }
+    
+    free(text);
+
+}
+
+void print_error(int n)
+{
+    if (n == 0)
+    {
+        printf("Invalid number of parameters\n");
+        exit(EXIT_FAILURE);
+    }
+    else if (n == 1)
+    {
+        printf("Invalid number: check the input\n");
+        exit(EXIT_FAILURE);
+    }
+    else if (n == 3)
+    {
+        printf("The number is out of range\n");
+        exit(EXIT_FAILURE);
+    }
+    else if (n == 4)
+    {
+        printf("Incorrect input. Cannot create matrix with zero or negative size.\n");
+        exit(EXIT_FAILURE);
+    }
+    else if (n == 5)
+    {
+        printf("Cannot create a file or it already exists\n");
+        exit(EXIT_FAILURE);
+    }
+    else if (n == 6)
+    {
+        printf("Cannot close the file\n");
+        exit(EXIT_FAILURE);
+    }
+    else if (n == 7)
+    {
+        printf("Cannot write to file\n");
+        exit(EXIT_FAILURE);
+    }
+    else if (n == 8)
+    {
+        printf("Cannot write all string to file\n");
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        printf("Unknown error\n");
+        exit(EXIT_FAILURE);
+    }
 }
