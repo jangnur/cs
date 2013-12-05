@@ -64,7 +64,7 @@ int main(int argc, char** argv, char** envp)
 void write_matrices(int fd, int n)
 {
     char* text;
-    int length  = 2*n*n + 1;
+    int length  = 4*n*n;
     text = (char*) malloc (length*sizeof(char));
     int i, j, count = 0;
     for (i = 0; i < n; i++)
@@ -124,32 +124,32 @@ void print_error(int n)
         printf("Invalid number: check the input\n");
         exit(EXIT_FAILURE);
     }
-    else if (n == 3)
+    else if (n == 2)
     {
         printf("The number is out of range\n");
         exit(EXIT_FAILURE);
     }
-    else if (n == 4)
+    else if (n == 3)
     {
         printf("Incorrect input. Cannot create matrix with zero or negative size.\n");
         exit(EXIT_FAILURE);
     }
-    else if (n == 5)
+    else if (n == 4)
     {
         printf("Cannot create a file or it already exists\n");
         exit(EXIT_FAILURE);
     }
-    else if (n == 6)
+    else if (n == 5)
     {
         printf("Cannot close the file\n");
         exit(EXIT_FAILURE);
     }
-    else if (n == 7)
+    else if (n == 6)
     {
         printf("Cannot write to file\n");
         exit(EXIT_FAILURE);
     }
-    else if (n == 8)
+    else if (n == 7)
     {
         printf("Cannot write all string to file\n");
         exit(EXIT_FAILURE);
