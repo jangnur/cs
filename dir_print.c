@@ -68,6 +68,7 @@ int read_dir_data(const char* path)
         file_mod_to_str(buf, fdsc->file_mode);
         
         printf("M: [%s].\n", buf);
+        // AP: а если размер большой? распечатайте его, если нужно, и в Mb и в Gb
         printf("S: [%u Bytes].\n", (unsigned int)fdsc->file_size);
         
         char *p = ctime(&(fdsc->file_creation_time));
