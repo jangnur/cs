@@ -30,3 +30,4 @@ sem_wait locks the semaphore(check if > 0, then -1; if ==0, then process stops u
 I hope you will appreciate my efforts.
 
 p.s. Sorry that I wrote this comment in English.*/
+// AP: оценил :)
