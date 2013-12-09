@@ -30,15 +30,18 @@ int read_dir(const char* dir_path, const char* out_path)
     if (fd < 0)
         return 2;
 
-    // AP: а можно ли здесь использовать ftruncate?
+    // AP: а можно ли здесь использовать ftruncate? NN: Да, можно. Можно вместо строчек с lseek написать ftruncate(fd, count*sizeof(fdesc));
     lseek(fd, count*sizeof(fdesc) + 1, SEEK_SET); //making it large enough to hold the information
-    // AP: а зачем вы держите открытым файл до конца программы?
+    // AP: а зачем вы держите открытым файл до конца программы? NN: Переставила. После выполнения mmap файл может быть закрыт.Это не повлияет на дальнейшую работу с отображенным файлом.
     write(fd, "", 1);
     lseek(fd, 0, SEEK_SET);
     
     void* mm = mmap(NULL, count*sizeof(fdesc), PROT_WRITE, MAP_SHARED, fd, 0);
     if (mm == 0)
         return 2;
+    
+    if (close(fd) < 0)
+        return 3;
     
     dir = opendir(dir_path);
     if(dir == NULL)
@@ -81,8 +84,6 @@ int read_dir(const char* dir_path, const char* out_path)
         ++fdsc;
     }
     
-    if (close(fd) < 0)
-        return 3;
     if (munmap(mm,count*sizeof(fdesc)) < 0)
         return 4;
     sem_post(sem);

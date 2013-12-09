@@ -10,6 +10,9 @@
 #include "fdesc.h"
 
 #define MAX_SIZE 128
+#define KILOBYTE 1024
+#define MEGABYTE 1048576
+#define GIGABYTE 1073741824
 
 void file_mod_to_str(char* buf, mode_t mode)
 {
@@ -32,6 +35,27 @@ void file_mod_to_str(char* buf, mode_t mode)
     else
     {
         strcpy(buf, "OTHER");
+    }
+}
+
+void format_size(unsigned int size)
+{
+    if (size < KILOBYTE)
+    {
+        printf("S: [%u Bytes].\n", size);
+    }
+    else if (size < MEGABYTE)
+    {
+        printf("S: [%.2f Kilobytes].\n", (double)size / KILOBYTE);
+    }
+    else if (size < GIGABYTE)
+    {
+        printf("S: [%.2f Megabytes].\n", (double)size / MEGABYTE);
+        
+    }
+    else
+    {
+        printf("S: [%.2f Gigabytes].\n", (double)size / GIGABYTE);
     }
 }
 
@@ -68,8 +92,10 @@ int read_dir_data(const char* path)
         file_mod_to_str(buf, fdsc->file_mode);
         
         printf("M: [%s].\n", buf);
-        // AP: а если размер большой? распечатайте его, если нужно, и в Mb и в Gb
-        printf("S: [%u Bytes].\n", (unsigned int)fdsc->file_size);
+        // AP: а если размер большой? распечатайте его, если нужно, и в Mb и в Gb //NN: Сделала. Функция format_size.
+        unsigned int size;
+        size = (unsigned int)fdsc->file_size;
+        format_size(size);
         
         char *p = ctime(&(fdsc->file_creation_time));
         
