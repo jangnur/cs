@@ -30,7 +30,9 @@ int read_dir(const char* dir_path, const char* out_path)
     if (fd < 0)
         return 2;
 
+    // AP: а можно ли здесь использовать ftruncate?
     lseek(fd, count*sizeof(fdesc) + 1, SEEK_SET); //making it large enough to hold the information
+    // AP: а зачем вы держите открытым файл до конца программы?
     write(fd, "", 1);
     lseek(fd, 0, SEEK_SET);
     
